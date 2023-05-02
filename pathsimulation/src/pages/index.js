@@ -87,7 +87,7 @@ export default function Home() {
   const resetGrid = ()=>{
     for(var i = 0; i < gridSize; i++){
       for(var j = 0; j < gridSize; j++){
-        if(grid[i][j].cell === "visited" || grid[i][j].cell === "unvisited" || grid[i][j].cell === "path"){
+        if(grid[i][j].cell === "visited" || grid[i][j].cell === "unvisited" || grid[i][j].cell === "path" || grid[i][j].cell === "wall"){
           grid[i][j].cell = "empty";
         }
 
@@ -109,7 +109,7 @@ export default function Home() {
   //Step 3: create a set of unvisited nodes.
   resetGrid()
 
-  if(targetIsPlaced && startIsPlaced){
+  if(targetIsPlaced && startIsPlaced && grid[startPos.Y][startPos.X].cell === "start" && grid[targetPos.Y][targetPos.X].cell === "target"){
     const unvisited = new Set();
     const visited = new Set();
     unvisited.add(`${startPos.X},${startPos.Y}`);
@@ -245,7 +245,7 @@ export default function Home() {
       <section className={styles.Section}>
         <div className={styles.MenuContainer}>
         <button className={styles.MenuButton} onClick={()=>{grid.length > 0 ? resetGrid() : createGrid()}}>{grid.length > 0 ? "Reset grid" : "Create grid"}</button>
-        <button className={styles.MenuButton} onClick={()=>dijkstra()} style={grid.length > 0 ? {} : {opacity: "0.5", pointerEvents: "none" }}>Dijktsras</button>
+        <button className={styles.MenuButton} onClick={()=>dijkstra()} style={grid.length > 0 ? {} : {opacity: "0.5", pointerEvents: "none" }}>Dijkstras</button>
         <button className={styles.MenuButton} onClick={()=>setCurrentSelection("start")} style={{borderColor: currentSelection === "start" ? "#78bafc" : ""}}>Start</button>
         <button className={styles.MenuButton} onClick={()=>setCurrentSelection("target")} style={{borderColor: currentSelection === "target" ? "#ff7f7f" : ""}}>Target</button>
         <button className={styles.MenuButton} onClick={()=>setCurrentSelection('wall')} style={{borderColor: currentSelection === "wall" ? "#000000" : ""}}>Wall</button>
