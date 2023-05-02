@@ -9,10 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@picocss/pico": "^1.5.9",
     "eslint": "8.38.0",
     "eslint-config-next": "13.3.0",
     "next": "13.3.0",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "react-use-scroll-direction": "^0.1.0"
   }
 }
