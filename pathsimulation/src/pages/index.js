@@ -45,7 +45,7 @@ export default function Home() {
             break;
           case "A*":
             // alert("not implemented in this version")
-            console.log(isSearching)
+            //console.log(isSearching)
             await astar.start();
             break;
           case "BFS":
