@@ -7,6 +7,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .MenuContainer{
@@ -22,6 +23,7 @@
   position: relative;
   margin-bottom: 0%;
   box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .MenuButton{
@@ -31,7 +33,7 @@
   border-radius: 5px;
   border: 2px solid;
   cursor: pointer;
-  font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -72,7 +74,7 @@
   border-radius: 5px;
   border: 2px solid;
   cursor: pointer;
-  font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -103,7 +105,7 @@
 .Dropdown .DropdownContent {
   display: none;
   position: absolute;
-  margin-top: -80px;
+  margin-top: -85px;
   z-index: 999;
 }
 
@@ -114,7 +116,7 @@
   border-radius: 5px;
   border: 2px solid;
   cursor: pointer;
-  font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;

@@ -185,19 +185,19 @@ export default function Home() {
     stopSearching: stopSearching,
  });
 
- const astar = new Astar({
-  grid: grid,
-  updateGrid: updateGrid,
-  timeoutUpdate: timeoutUpdate,
-  gridSize: gridSize,
-  startPos: startPos,
-  targetPos: targetPos,
-  searchDelay: searchDelay,
-  resetGrid: resetGrid,
-  startIsPlaced: startIsPlaced,
-  targetIsPlaced: targetIsPlaced,
-  isSearching: isSearching,
-  stopSearching: stopSearching,
+  const astar = new Astar({
+    grid: grid,
+    updateGrid: updateGrid,
+    timeoutUpdate: timeoutUpdate,
+    gridSize: gridSize,
+    startPos: startPos,
+    targetPos: targetPos,
+    searchDelay: searchDelay,
+    resetGrid: resetGrid,
+    startIsPlaced: startIsPlaced,
+    targetIsPlaced: targetIsPlaced,
+    isSearching: isSearching,
+    stopSearching: stopSearching,
 });
 
   function stopSearching(){
