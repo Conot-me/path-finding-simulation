@@ -254,7 +254,7 @@ export default function Home() {
     <>
       <Head>
         <title>Path Simulator</title>
-        <meta property="og:title" content="My page title" key="title" />
+        <meta property="og:Path finding" content="Shortest Path Simulator" key="visualisation" />
       </Head>
       <section className={styles.Section}>
         
