@@ -138,7 +138,7 @@ export default function Home() {
 
   useEffect(() => {
     createGrid();
-  });
+  },[]);
 
   const resetGrid = ()=>{
     // setIsSearching(false)
