@@ -1,6 +1,8 @@
 import Head from 'next/head'
 import styles from '@/styles/Home.module.css'
 import { useState, useEffect, use } from 'react'
+import Dijkstras from '@/algorithms/dijkstra.js'
+import Astar from '@/algorithms/astar.js'
 
 export default function Home() {
   const [currentSelection, setCurrentSelection] = useState(null);
@@ -10,10 +12,55 @@ export default function Home() {
   const [gridHeight, setGridHeight] = useState(60)
   const [targetDistance, setTragetDistance] = useState(0)
   const [startPos, setStartPos] = useState({X: Math.floor(gridSize/2), Y: Math.floor(gridSize/2)})
-  const [targetPos, setTargetPos] = useState({X: 3, Y: 7})
+  const [targetPos, setTargetPos] = useState({X: gridSize-1, Y: gridSize-1})
   const [searchDelay, setSearchDelay] = useState(10)
   const [startIsPlaced, setStartIsPlaced] = useState(true)
   const [targetIsPlaced, setTargetIsPlaced] = useState(true)
+  const [hoveredCell, setHoveredCell] = useState(null);
+  const [currentAlgo, setcurrentAlgo] = useState("Algorithms")
+  const [isSearching, setIsSearching] = useState(false)
+  const [isMouseDown, setIsMouseDown] = useState(false)
+  const handleHover = (cellId) => {
+    setHoveredCell(cellId);
+  };
+
+  const handleMouseDown = ()=>{
+    setIsMouseDown(true)
+  }
+  const handleMouseUp = ()=>{
+    setIsMouseDown(false)
+  }
+  const handleSearch = async () => {
+    setCurrentSelection(null)
+    setIsSearching(true)
+  }
+
+  useEffect(() => {
+    if(isSearching){
+      (async ()=> {
+        switch(currentAlgo){
+          case "Dijkstras":
+            await dijkstras.start();
+            //dijkstras.stop();
+            break;
+          case "A*":
+            // alert("not implemented in this version")
+            console.log(isSearching)
+            await astar.start();
+            break;
+          case "BFS":
+            alert("not implemented in this version")
+            break;
+          default:
+            alert("Please choose an algorithm!")
+      }
+      setIsSearching(false)
+    })()
+    return;
+  }
+  
+}, [isSearching]);
+
   
   const handleClick = (pos) => {
     switch(currentSelection){
@@ -24,6 +71,8 @@ export default function Home() {
         
         setStartPos(pos)
         grid[pos.Y][pos.X].distance = 0;
+        grid[pos.Y][pos.X].cell = currentSelection; 
+
         break;
       case "target":
         setTargetIsPlaced(true)
@@ -31,6 +80,7 @@ export default function Home() {
         grid[targetPos.Y][targetPos.X].distance = Infinity;
         setTargetPos(pos)
         grid[pos.Y][pos.X].distance = Infinity;
+        grid[pos.Y][pos.X].cell = currentSelection; 
         break;
 
       case "wall":
@@ -38,10 +88,12 @@ export default function Home() {
           case "start":
             setStartIsPlaced(false)
             grid[pos.Y][pos.X].distance = Infinity;
+            grid[pos.Y][pos.X].cell = currentSelection; 
             break;
           case "target":
             setTargetIsPlaced(false)
             grid[pos.Y][pos.X].distance = Infinity;
+            grid[pos.Y][pos.X].cell = currentSelection; 
             break;
             case "wall":
               grid[pos.Y][pos.X].cell = "empty"
@@ -52,12 +104,11 @@ export default function Home() {
           break;
         }
         grid[pos.Y][pos.X].distance = Infinity;
+        grid[pos.Y][pos.X].cell = currentSelection; 
         break;
       default:
         null
     }
-
-    grid[pos.Y][pos.X].cell = currentSelection; 
     updateGrid();
   };
   
@@ -77,7 +128,8 @@ export default function Home() {
           cell: i === startPos.Y && j === startPos.X ? "start" : i === targetPos.Y && j === targetPos.X ? "target" : "empty",
           weight:  1,
           distance: i === startPos.Y && j === startPos.X ? 0 : Infinity,
-          pos: {X: j, Y: i}
+          pos: {X: j, Y: i},
+          parentPos: {X: null, Y: null}
         }
       }
     }
@@ -85,9 +137,10 @@ export default function Home() {
   }; 
 
   const resetGrid = ()=>{
+    // setIsSearching(false)
     for(var i = 0; i < gridSize; i++){
       for(var j = 0; j < gridSize; j++){
-        if(grid[i][j].cell === "visited" || grid[i][j].cell === "unvisited" || grid[i][j].cell === "path" || grid[i][j].cell === "wall"){
+        if(grid[i][j].cell === "visited" || grid[i][j].cell === "unvisited" || grid[i][j].cell === "path"){
           grid[i][j].cell = "empty";
         }
 
@@ -98,134 +151,53 @@ export default function Home() {
     updateGrid()
   }
 
+  const removeWalls = ()=>{
+    for(var i = 0; i < gridSize; i++){
+      for(var j = 0; j < gridSize; j++){
+        if(grid[i][j].cell === "wall"){
+          grid[i][j].cell = "empty";
+          grid[i][j].distance = Infinity;
+
+        }
+      }
+    }
+    updateGrid()
+  }
+
   const updateGrid = ()=> {setGrid([...grid])};
 
-  var currentNodePos;
-  var smallest = null;
+  const dijkstras = new Dijkstras({
+    grid: grid,
+    updateGrid: updateGrid,
+    timeoutUpdate: timeoutUpdate,
+    gridSize: gridSize,
+    startPos: startPos,
+    targetPos: targetPos,
+    searchDelay: searchDelay,
+    resetGrid: resetGrid,
+    startIsPlaced: startIsPlaced,
+    targetIsPlaced: targetIsPlaced,
+    isSearching: isSearching,
+    stopSearching: stopSearching,
+ });
 
-  const dijkstra = async ()=>{
-  // Step 1: Initialize distances from start node to all other nodes. already done through createGrid.
-  // Step 2: already done through create grid.
-  //Step 3: create a set of unvisited nodes.
-  resetGrid()
+ const astar = new Astar({
+  grid: grid,
+  updateGrid: updateGrid,
+  timeoutUpdate: timeoutUpdate,
+  gridSize: gridSize,
+  startPos: startPos,
+  targetPos: targetPos,
+  searchDelay: searchDelay,
+  resetGrid: resetGrid,
+  startIsPlaced: startIsPlaced,
+  targetIsPlaced: targetIsPlaced,
+  isSearching: isSearching,
+  stopSearching: stopSearching,
+});
 
-  if(targetIsPlaced && startIsPlaced && grid[startPos.Y][startPos.X].cell === "start" && grid[targetPos.Y][targetPos.X].cell === "target"){
-    const unvisited = new Set();
-    const visited = new Set();
-    unvisited.add(`${startPos.X},${startPos.Y}`);
-  
-    while(grid[targetPos.Y][targetPos.X].distance === Infinity && unvisited.size > 0) {
-      smallest = null;
-      currentNodePos = null;
-      unvisited?.forEach(function(value){ //find the smallest distance node in the unvisited list
-        const [i, j] = value.split(",");
-        if(grid && grid[Number(j)] && grid[Number(j)][Number(i)]){
-          const node = grid[Number(j)][Number(i)]; 
-          if (smallest === null || node.distance < smallest) {
-            smallest = node.distance;
-            currentNodePos = { X: Number(i), Y: Number(j) };
-  
-          }
-        }else {
-          console.log("Index out of range or grid not initialized properly");
-        }
-        })
-        visited.add(`${currentNodePos.Y},${currentNodePos.X}`);
-        
-        currentNodePos.Y === startPos.Y && currentNodePos.X === startPos.X ? null : grid[currentNodePos.Y][currentNodePos.X].cell = "visited";
-        await timeoutUpdate(searchDelay)
-  
-        //check all neighbours, update their distance values and add to unvisited
-        if(currentNodePos.Y > 0 && !visited.has(`${currentNodePos.Y-1},${currentNodePos.X}`) && grid[currentNodePos.Y -1][currentNodePos.X].cell !== "wall"){ //check above of node
-          let newDist = grid[currentNodePos.Y][currentNodePos.X].distance + grid[currentNodePos.Y -1][currentNodePos.X].weight
-          if(newDist < grid[currentNodePos.Y - 1][currentNodePos.X].distance){          
-            grid[currentNodePos.Y - 1][currentNodePos.X].distance = newDist;
-          }
-          currentNodePos.Y-1 === targetPos.Y && currentNodePos.X === targetPos.X ? null : grid[currentNodePos.Y - 1][currentNodePos.X].cell = "unvisited"
-          unvisited.add(`${currentNodePos.X},${currentNodePos.Y - 1}`); 
-          await timeoutUpdate(searchDelay)
-        }
-  
-        if(currentNodePos.X < gridSize-1 && !visited.has(`${currentNodePos.Y},${currentNodePos.X+1}`) && grid[currentNodePos.Y][currentNodePos.X+1].cell !== "wall"){ //check right of node
-          let newDist = grid[currentNodePos.Y][currentNodePos.X].distance + grid[currentNodePos.Y][currentNodePos.X + 1].weight
-          if(newDist < grid[currentNodePos.Y][currentNodePos.X + 1].distance) {
-            grid[currentNodePos.Y][currentNodePos.X + 1].distance = newDist;
-          }
-          currentNodePos.Y === targetPos.Y && currentNodePos.X+1 === targetPos.X ? null : grid[currentNodePos.Y][currentNodePos.X + 1].cell = "unvisited"
-          unvisited.add(`${currentNodePos.X + 1},${currentNodePos.Y}`);
-          await timeoutUpdate(searchDelay)
-        }
-  
-        if(currentNodePos.Y < gridSize-1 && !visited.has(`${currentNodePos.Y+1},${currentNodePos.X}`) && grid[currentNodePos.Y + 1][currentNodePos.X].cell !== "wall"){ //check below of node
-          let newDist = grid[currentNodePos.Y][currentNodePos.X].distance + grid[currentNodePos.Y + 1][currentNodePos.X].weight
-          if(newDist < grid[currentNodePos.Y + 1][currentNodePos.X].distance) {
-            grid[(currentNodePos.Y + 1)][currentNodePos.X].distance = newDist;
-          }
-          currentNodePos.Y+1 === targetPos.Y && currentNodePos.X === targetPos.X ? null : grid[currentNodePos.Y + 1][currentNodePos.X].cell = "unvisited"
-          unvisited.add(`${currentNodePos.X},${currentNodePos.Y + 1}`);
-          await timeoutUpdate(searchDelay)
-        }
-  
-        if(currentNodePos.X > 0 && !visited.has(`${currentNodePos.Y},${currentNodePos.X-1}`) && grid[currentNodePos.Y][currentNodePos.X - 1].cell !== "wall"){ //check left of node
-          let newDist = grid[currentNodePos.Y][currentNodePos.X].distance + grid[currentNodePos.Y][currentNodePos.X - 1].weight
-          if(newDist < grid[currentNodePos.Y][currentNodePos.X - 1].distance) {          
-            grid[currentNodePos.Y][currentNodePos.X - 1].distance = newDist;
-          }
-          currentNodePos.Y === targetPos.Y && currentNodePos.X-1 === targetPos.X ? null : grid[currentNodePos.Y][currentNodePos.X - 1].cell = "unvisited"
-          unvisited.add(`${currentNodePos.X-1},${currentNodePos.Y}`);
-          await timeoutUpdate(searchDelay)
-        }
-  
-        unvisited.delete(`${currentNodePos.X},${currentNodePos.Y}`);
-    }
-  
-    updateGrid()
-    findPath()
-    return;
-  }
-  alert("Please Assign a Start and Target node")
-}
-
-  const findPath = async ()=> {
-    if(grid[targetPos.Y][targetPos.X].distance === Infinity) {
-      alert("Target has not been reached!"); 
-      return;
-    }
-
-    let counter = 0;
-    currentNodePos = { X: targetPos.X, Y: targetPos.Y };
-    smallest = Infinity;
-
-    while((currentNodePos.X !== startPos.X) || (currentNodePos.Y !== startPos.Y)){
-      let nodeBuffer = null
-      if((currentNodePos.Y - 1 >= 0) && (grid[currentNodePos.Y-1][currentNodePos.X].distance < smallest) && (grid[currentNodePos.Y-1][currentNodePos.X].cell !== "unvisited")){ //check above of node
-        smallest = grid[currentNodePos.Y-1][currentNodePos.X].distance;
-        nodeBuffer = { X: currentNodePos.X, Y: currentNodePos.Y-1};
-      } 
-      if((currentNodePos.X + 1 <= gridSize - 1) && (grid[currentNodePos.Y][currentNodePos.X+1].distance < smallest) && (grid[currentNodePos.Y][currentNodePos.X+1].cell !== "unvisited")){ //check right of node
-        smallest = grid[currentNodePos.Y][currentNodePos.X + 1].distance;
-        nodeBuffer = { X: currentNodePos.X + 1, Y: currentNodePos.Y}; 
-      }
-      if((currentNodePos.Y + 1 <= gridSize - 1) && (grid[currentNodePos.Y+1][currentNodePos.X].distance < smallest) && (grid[currentNodePos.Y+1][currentNodePos.X].cell !== "unvisited")){ //check below of node
-        smallest = grid[currentNodePos.Y+1][currentNodePos.X].distance;
-        nodeBuffer = { X: currentNodePos.X, Y: currentNodePos.Y+1}; 
-      }
-      if((currentNodePos.X - 1 >= 0) && (grid[currentNodePos.Y][currentNodePos.X-1].distance < smallest) && (grid[currentNodePos.Y][currentNodePos.X-1].cell !== "unvisited")){ //check left of node
-        smallest = grid[currentNodePos.Y][currentNodePos.X - 1].distance;
-        nodeBuffer = { X: currentNodePos.X - 1, Y: currentNodePos.Y};     
-      } 
-    
-      currentNodePos = nodeBuffer; 
-      try{
-        if((currentNodePos.X !== startPos.X) || (currentNodePos.Y !== startPos.Y)) grid[currentNodePos.Y][currentNodePos.X].cell = "path";
-      }
-      catch(error){
-        console.log("error finding path "+error)
-      }
-      counter++;
-      await timeoutUpdate(50)
-    }
-    alert("Shortest path has been found!"); 
+  function stopSearching(){
+    //setIsSearching(false)
   }
 
   async function findTargetDistance(){
@@ -236,6 +208,44 @@ export default function Home() {
     findTargetDistance()
   }, [startPos, targetPos]);
 
+  const cellStyle = (cell) =>{
+    return{
+      backgroundColor: (()=>{ //IIFE (immediately invoked function expression)
+        switch(cell.cell){
+          case "start":
+            return "#78bafc" // blue
+          case "target": 
+            return "#ff7f7f" // red
+          case "path": 
+            return "#78e080" // light green
+          case "visited":  
+            return "#d1c4e9" // pale lavender
+          case "unvisited": 
+            return "#f6c37d" //  warm orange-yellow
+          case "wall": 
+            return "#000000" // black
+          default:
+            return ""
+        }
+      })(),
+      width: `${100/gridSize}%`,
+      height: `${100/gridSize}%`,
+      border: cell.id === hoveredCell ? (()=>{
+        switch(currentSelection){
+          case "start":
+            return "2px solid #78bafc" // blue
+          case "target": 
+            return " 2px solid #ff7f7f" // red
+          case "wall": 
+            return " 2px solid #000000" // black
+          default:
+            return "1px solid #465b7f"
+        }
+      })() : "1px solid #465b7f"
+    }
+  };
+  
+
   return (
     <>
       <Head>
@@ -243,41 +253,29 @@ export default function Home() {
         <meta property="og:title" content="My page title" key="title" />
       </Head>
       <section className={styles.Section}>
+        
         <div className={styles.MenuContainer}>
-        <button className={styles.MenuButton} onClick={()=>{grid.length > 0 ? resetGrid() : createGrid()}}>{grid.length > 0 ? "Reset grid" : "Create grid"}</button>
-        <button className={styles.MenuButton} onClick={()=>dijkstra()} style={grid.length > 0 ? {} : {opacity: "0.5", pointerEvents: "none" }}>Dijkstras</button>
-        <button className={styles.MenuButton} onClick={()=>setCurrentSelection("start")} style={{borderColor: currentSelection === "start" ? "#78bafc" : ""}}>Start</button>
-        <button className={styles.MenuButton} onClick={()=>setCurrentSelection("target")} style={{borderColor: currentSelection === "target" ? "#ff7f7f" : ""}}>Target</button>
-        <button className={styles.MenuButton} onClick={()=>setCurrentSelection('wall')} style={{borderColor: currentSelection === "wall" ? "#000000" : ""}}>Wall</button>
+        <button className={styles.MenuButton} onClick={()=>{grid.length > 0 ? (resetGrid(), removeWalls()) : createGrid()}}  style={isSearching ? {opacity: "0.5", pointerEvents: "none" } : null}>{grid.length > 0 ? "Reset grid" : "Create grid"}</button>
+        <div className={styles.Dropdown}>
+          <button className={styles.MenuButton}>{currentAlgo === false ? "Algorithms" : currentAlgo}</button>
+          <div className={styles.DropdownContent}>
+            <a onClick={()=>setcurrentAlgo("Dijkstras")}>Dijkstras</a>
+            <a onClick={()=>setcurrentAlgo("A*")}>A*</a>
+            <a onClick={()=>setcurrentAlgo("BFS")}>BFS</a>
+          </div>
+        </div>
+        <button className={styles.MenuButton} onClick={()=>handleSearch()} style={(grid.length > 0 && !isSearching) ? {} : {opacity: "0.5", pointerEvents: "none" }}>Find Path</button>
+        <button className={styles.MenuButton} onClick={()=>setCurrentSelection("start")} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "start" ? "#78bafc" : ""}}>Place Start</button>
+        <button className={styles.MenuButton} onClick={()=>setCurrentSelection("target")} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "target" ? "#ff7f7f" : ""}}>Place Target</button>
+        <button className={styles.MenuButton} onClick={()=>setCurrentSelection('wall')} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "wall" ? "#000000" : ""}}>Add Walls</button>
         </div>
         
         <div className={styles.Grid} style={{width: `${gridWidth}%`, height: `${gridHeight}%`}}>
           {grid.map((cellRow) => {
             return cellRow.map((cell) => {
               return (
-                <div className={styles.Cell} key={cell.id} onClick={()=>handleClick(cell.pos)} style={{
-                  backgroundColor: (()=>{ //IIFE (immediately invoked function expression)
-                    switch(cell.cell){
-                      case "start":
-                        return "#78bafc" // orange
-                      case "target": 
-                        return "#ff7f7f" // pink
-                      case "path": 
-                        return "#78e080" // light green
-                      case "visited": 
-                        return "#d1c4e9" // pale lavender
-                      case "unvisited": 
-                        return "#f6c37d" //  warm orange-yellow
-                      case "wall": 
-                        return "#000000" // black
-                      default:
-                        return ""
-                    }
-                  })(),                  
-                  width: `${100/gridSize}%`,
-                  height: `${100/gridSize}%`
-                  }}>
-                  <p>{cell.distance === Infinity ? "∞" : cell.distance}</p>
+                <div className={styles.Cell} key={cell.id} onClick={()=>handleClick(cell.pos)} onMouseEnter={() => {handleHover(cell.id); isMouseDown ? handleClick(cell.pos) : null}} onMouseDown={()=>handleMouseDown()} onMouseUp={()=>handleMouseUp()} style={cellStyle(cell)}>
+                  {/* <p>{cell.distance === Infinity ? "∞" : cell.distance}</p> */}
                 </div>
               );
             });
@@ -290,7 +288,7 @@ export default function Home() {
               <p style={{color: "#78e080" }}>Path Node</p>
           </div>
         </div>
-
+        
       </section>
     </>
 
