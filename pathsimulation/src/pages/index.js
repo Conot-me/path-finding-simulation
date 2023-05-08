@@ -136,6 +136,10 @@ export default function Home() {
     setGrid(gridBuffer)
   }; 
 
+  useEffect(() => {
+    createGrid();
+  });
+
   const resetGrid = ()=>{
     // setIsSearching(false)
     for(var i = 0; i < gridSize; i++){
