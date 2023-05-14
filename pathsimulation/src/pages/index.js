@@ -395,9 +395,10 @@ const recursiveBacktracker = new RecursiveBacktracker({
               <li>If you want to add walls simply click on the wall button and then click/drag over the grid. There is also a option to generate a maze in the grid, this will unfortunately make you repeat the steps above.</li><br/>
               <li>When you are ready to find your path, simply click on the "find path" button and watch the simulation.</li>
             </ul>
-          </div>
+          </div> 
         </div>
       </section>
+      
     </>
 
   )
