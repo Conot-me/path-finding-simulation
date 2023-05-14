@@ -398,7 +398,6 @@ const recursiveBacktracker = new RecursiveBacktracker({
           </div> 
         </div>
       </section>
-      
     </>
 
   )
