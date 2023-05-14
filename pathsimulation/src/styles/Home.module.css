@@ -313,5 +313,28 @@
   color: #fff;
 }
 
+.Guide {
+  padding: 20px;
+  color: #ccc;
+  /* background-color: #f5f5f5; */
+  /* border: 1px solid #ccc; */
+  border-radius: 5px;
+}
 
+.GuideTitle {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.GuideDescription {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.GuideInstructions {
+  font-size: 14px;
+  margin-left: 20px;
+  padding-left: 0;
+  list-style: disc;
+}
 
