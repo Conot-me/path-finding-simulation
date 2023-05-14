@@ -1,6 +1,6 @@
 import { useState } from "react";
 import React from "react";
-export default class Dijkstras extends React.Component{
+export default class BFS extends React.Component{
 
     constructor(props) {
         super(props);
@@ -23,35 +23,39 @@ export default class Dijkstras extends React.Component{
 
       }
 
+      async calculateDistance(node){
+        let distance = Math.abs(this.startPos.X - node.X) + Math.abs(this.startPos.Y - node.Y);
+        return distance
+      }
+
 
     async start(){
-        // Step 1: Initialize costs from start node to all other nodes.
-        // Step 2: already done through create this.grid.
-        //Step 3: create a set of unvisited nodes.
-        // console.log(this.isSearching)
         this.resetGrid()
         const dijkstraThis = this;
         if(this.targetIsPlaced && this.startIsPlaced && this.grid[this.startPos.Y][this.startPos.X].cell === "start" && this.grid[this.targetPos.Y][this.targetPos.X].cell === "target"){
           const unvisited = new Set();
           const visited = new Set();
+          let iterator = unvisited.values();
           unvisited.add(`${this.startPos.X},${this.startPos.Y}`);
           while(this.isSearching && (this.grid[this.targetPos.Y][this.targetPos.X].cost === Infinity) && unvisited.size > 0) {
-            //console.log(this.isSearching)
+            let buffer = iterator.next().value
+            const [i, j] = buffer.split(",");
+            this.currentNodePos = { X: Number(i), Y: Number(j) };
             
-            this.smallest = null;
-            this.currentNodePos = null;
-            unvisited?.forEach(function(value){ //find the smallest cost node in the unvisited list
-              const [i, j] = value.split(",");
-              if(dijkstraThis.grid && dijkstraThis.grid[Number(j)] && dijkstraThis.grid[Number(j)][Number(i)]){
-                const node = dijkstraThis.grid[Number(j)][Number(i)]; 
-                if (dijkstraThis.smallest === null || node.cost < dijkstraThis.smallest) {
-                    dijkstraThis.smallest = node.cost;
-                    dijkstraThis.currentNodePos = { X: Number(i), Y: Number(j) };
-                }
-              }else {
-                console.log("Index out of range or this.grid not initialized properly");
-              }
-              })
+            console.log(this.currentNodePos)
+
+            // unvisited?.forEach(function(value){ //find the smallest cost node in the unvisited list
+            //   const [i, j] = value.split(",");
+            //   if(dijkstraThis.grid && dijkstraThis.grid[Number(j)] && dijkstraThis.grid[Number(j)][Number(i)]){
+            //     const node = dijkstraThis.grid[Number(j)][Number(i)]; 
+            //     if (dijkstraThis.smallest === null || node.cost < dijkstraThis.smallest) {
+            //         dijkstraThis.smallest = node.cost;
+            //         dijkstraThis.currentNodePos = { X: Number(i), Y: Number(j) };
+            //     }
+            //   }else {
+            //     console.log("Index out of range or this.grid not initialized properly");
+            //   }
+            //   })
               visited.add(`${this.currentNodePos.Y},${this.currentNodePos.X}`);
               
               this.currentNodePos.Y === this.startPos.Y && this.currentNodePos.X === this.startPos.X ? null : this.grid[this.currentNodePos.Y][this.currentNodePos.X].cell = "visited";
@@ -59,9 +63,10 @@ export default class Dijkstras extends React.Component{
         
               //check all neighbours, update their cost values and add to unvisited
               if(this.currentNodePos.Y > 0 && !visited.has(`${this.currentNodePos.Y-1},${this.currentNodePos.X}`) && this.grid[this.currentNodePos.Y -1][this.currentNodePos.X].cell !== "wall"){ //check above of node
-                let newDist = this.grid[this.currentNodePos.Y][this.currentNodePos.X].cost + this.grid[this.currentNodePos.Y -1][this.currentNodePos.X].weight
+                let newDist = await this.calculateDistance({Y: this.currentNodePos.Y - 1, X: this.currentNodePos.X})
                 if(newDist < this.grid[this.currentNodePos.Y - 1][this.currentNodePos.X].cost){          
                   this.grid[this.currentNodePos.Y - 1][this.currentNodePos.X].cost = newDist;
+                  this.grid[this.currentNodePos.Y - 1][this.currentNodePos.X].parentPos = this.currentNodePos;
                 }
                 this.currentNodePos.Y-1 === this.targetPos.Y && this.currentNodePos.X === this.targetPos.X ? null : this.grid[this.currentNodePos.Y - 1][this.currentNodePos.X].cell = "unvisited"
                 unvisited.add(`${this.currentNodePos.X},${this.currentNodePos.Y - 1}`); 
@@ -69,9 +74,10 @@ export default class Dijkstras extends React.Component{
               }
         
               if(this.currentNodePos.X < this.gridSize-1 && !visited.has(`${this.currentNodePos.Y},${this.currentNodePos.X+1}`) && this.grid[this.currentNodePos.Y][this.currentNodePos.X+1].cell !== "wall"){ //check right of node
-                let newDist = this.grid[this.currentNodePos.Y][this.currentNodePos.X].cost + this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].weight
+                let newDist = await this.calculateDistance({Y: this.currentNodePos.Y, X: this.currentNodePos.X + 1})
                 if(newDist < this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].cost) {
                   this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].cost = newDist;
+                  this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].parentPos = this.currentNodePos;
                 }
                 this.currentNodePos.Y === this.targetPos.Y && this.currentNodePos.X+1 === this.targetPos.X ? null : this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].cell = "unvisited"
                 unvisited.add(`${this.currentNodePos.X + 1},${this.currentNodePos.Y}`);
@@ -79,9 +85,10 @@ export default class Dijkstras extends React.Component{
               }
         
               if(this.currentNodePos.Y < this.gridSize-1 && !visited.has(`${this.currentNodePos.Y+1},${this.currentNodePos.X}`) && this.grid[this.currentNodePos.Y + 1][this.currentNodePos.X].cell !== "wall"){ //check below of node
-                let newDist = this.grid[this.currentNodePos.Y][this.currentNodePos.X].cost + this.grid[this.currentNodePos.Y + 1][this.currentNodePos.X].weight
+                let newDist = await this.calculateDistance({Y: this.currentNodePos.Y + 1, X: this.currentNodePos.X})
                 if(newDist < this.grid[this.currentNodePos.Y + 1][this.currentNodePos.X].cost) {
                   this.grid[(this.currentNodePos.Y + 1)][this.currentNodePos.X].cost = newDist;
+                  this.grid[this.currentNodePos.Y + 1][this.currentNodePos.X].parentPos = this.currentNodePos;
                 }
                 this.currentNodePos.Y+1 === this.targetPos.Y && this.currentNodePos.X === this.targetPos.X ? null : this.grid[this.currentNodePos.Y + 1][this.currentNodePos.X].cell = "unvisited"
                 unvisited.add(`${this.currentNodePos.X},${this.currentNodePos.Y + 1}`);
@@ -89,9 +96,10 @@ export default class Dijkstras extends React.Component{
               }
         
               if(this.currentNodePos.X > 0 && !visited.has(`${this.currentNodePos.Y},${this.currentNodePos.X-1}`) && this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].cell !== "wall"){ //check left of node
-                let newDist = this.grid[this.currentNodePos.Y][this.currentNodePos.X].cost + this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].weight
+                let newDist = await this.calculateDistance({Y: this.currentNodePos.Y, X: this.currentNodePos.X - 1})
                 if(newDist < this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].cost) {          
                   this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].cost = newDist;
+                  this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].parentPos = this.currentNodePos;
                 }
                 this.currentNodePos.Y === this.targetPos.Y && this.currentNodePos.X-1 === this.targetPos.X ? null : this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].cell = "unvisited"
                 unvisited.add(`${this.currentNodePos.X-1},${this.currentNodePos.Y}`);
@@ -121,38 +129,16 @@ export default class Dijkstras extends React.Component{
           alert("Target has not been reached!"); 
           return;
         }
-    
-        this.counter = 0;
-        this.currentNodePos = { X: this.targetPos.X, Y: this.targetPos.Y };
-        this.smallest = Infinity;
-    
+
+        this.currentNodePos = { X: this.targetPos.X, Y: this.targetPos.Y };    
         while((this.currentNodePos.X !== this.startPos.X) || (this.currentNodePos.Y !== this.startPos.Y)){
-          let nodeBuffer = null
-          if((this.currentNodePos.Y - 1 >= 0) && (this.grid[this.currentNodePos.Y-1][this.currentNodePos.X].cost < this.smallest) && (this.grid[this.currentNodePos.Y-1][this.currentNodePos.X].cell !== "unvisited")){ //check above of node
-            this.smallest = this.grid[this.currentNodePos.Y-1][this.currentNodePos.X].cost;
-            nodeBuffer = { X: this.currentNodePos.X, Y: this.currentNodePos.Y-1};
-          } 
-          if((this.currentNodePos.X + 1 <= this.gridSize - 1) && (this.grid[this.currentNodePos.Y][this.currentNodePos.X+1].cost < this.smallest) && (this.grid[this.currentNodePos.Y][this.currentNodePos.X+1].cell !== "unvisited")){ //check right of node
-            this.smallest = this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].cost;
-            nodeBuffer = { X: this.currentNodePos.X + 1, Y: this.currentNodePos.Y}; 
-          }
-          if((this.currentNodePos.Y + 1 <= this.gridSize - 1) && (this.grid[this.currentNodePos.Y+1][this.currentNodePos.X].cost < this.smallest) && (this.grid[this.currentNodePos.Y+1][this.currentNodePos.X].cell !== "unvisited")){ //check below of node
-            this.smallest = this.grid[this.currentNodePos.Y+1][this.currentNodePos.X].cost;
-            nodeBuffer = { X: this.currentNodePos.X, Y: this.currentNodePos.Y+1}; 
-          }
-          if((this.currentNodePos.X - 1 >= 0) && (this.grid[this.currentNodePos.Y][this.currentNodePos.X-1].cost < this.smallest) && (this.grid[this.currentNodePos.Y][this.currentNodePos.X-1].cell !== "unvisited")){ //check left of node
-            this.smallest = this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].cost;
-            nodeBuffer = { X: this.currentNodePos.X - 1, Y: this.currentNodePos.Y};     
-          } 
-        
-          this.currentNodePos = nodeBuffer; 
+          this.currentNodePos = this.grid[this.currentNodePos.Y][this.currentNodePos.X].parentPos;
           try{
             if((this.currentNodePos.X !== this.startPos.X) || (this.currentNodePos.Y !== this.startPos.Y)) this.grid[this.currentNodePos.Y][this.currentNodePos.X].cell = "path";
           }
           catch(error){
             console.log("error finding path "+error)
           }
-          this.counter++;
           await this.timeoutUpdate(50)
         }
         alert("Shortest path has been found!"); 

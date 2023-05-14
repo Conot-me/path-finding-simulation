@@ -5,13 +5,14 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: center;
   font-family: 'Montserrat', sans-serif;
 }
 
 .MenuContainer{
-  width: 770px;
+  margin-top: 3vh;
+  width: 780px;
   height: auto;
   display: flex;
   flex-direction: row;
@@ -26,10 +27,25 @@
   font-family: 'Montserrat', sans-serif;
 }
 
+.MenuContainer2{
+  width: 770px;
+  height: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  border-radius: 10px;
+  color: white;
+  position: relative;
+  margin-bottom: 0%;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
 .MenuButton{
   background-color: rgba(255, 255, 255, 0.5); /* semi-transparent white */
   color: white;
-  padding: 10px 20px;
+  padding: 7px 8px;
   border-radius: 5px;
   border: 2px solid;
   cursor: pointer;
@@ -70,7 +86,7 @@
 .Dropdown button {
   background-color: rgba(255, 255, 255, 0.5);
   color: white;
-  padding: 10px 20px;
+  padding: 5px 5px;
   border-radius: 5px;
   border: 2px solid;
   cursor: pointer;
@@ -105,14 +121,14 @@
 .Dropdown .DropdownContent {
   display: none;
   position: absolute;
-  margin-top: -85px;
+  margin-top: -73px;
   z-index: 999;
 }
 
 .Dropdown .DropdownContent a {
   background-color: rgba(255, 255, 255, 0.5);
   color: white;
-  padding: 10px 20px;
+  padding: 8px 8px;
   border-radius: 5px;
   border: 2px solid;
   cursor: pointer;
@@ -147,18 +163,18 @@
 }
 
 .Grid{
-  max-width: 775px;
-  /* min-width: 775px; */
-  width: 775px;
-  max-height: 775px;
-  /* min-height: 775px; */
-  /* min-width: 50%; */
-  /* min-height: 20%; */
+  max-width: 770px;
+  max-height: 770px;
+  min-width: 770px;
+  min-height: 770px;
+  /* width: 47vw;
+  height: 47vw; */
   border: 2px solid #465b7f;
   border-radius: 5px;
   display: flex;
   flex-wrap: wrap;
   background-color: #465b7f;
+  /* overflow: none; */
 }
 
 .Cell{
@@ -182,4 +198,119 @@
   /* background-color: #465b7f; */
   border-radius: 2px;
 }
+
+.Checkbox {
+  display: inline-block;
+  position: relative;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  margin: 5px;
+}
+
+.Checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.CheckboxMark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+  border: 2px solid;
+  transition: all 200ms;
+}
+
+.CheckboxLabel {
+  padding-left: 25px;
+}
+
+.Checkbox input[type="checkbox"]:checked ~ .CheckboxMark {
+  background-color: #fff;
+}
+
+.Checkbox input[type="checkbox"]:checked ~ .CheckboxMark:after {
+  content: "";
+  position: absolute;
+  display: block;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #000;
+}
+
+.SliderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.SliderLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.Slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.Slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0px 0px 8px 0px rgba(255, 255, 255, 0.8);
+}
+
+.Slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0px 0px 8px 0px rgba(255, 255, 255, 0.8);
+}
+
+.SliderValue {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #fff;
+}
+
+
 

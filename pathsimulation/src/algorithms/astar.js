@@ -1,4 +1,3 @@
-import { useState } from "react";
 import React from "react";
 export default class Astar extends React.Component{
 
@@ -10,9 +9,9 @@ export default class Astar extends React.Component{
 
 3.Define the start state: The start state is the initial position from where you start searching for the destination. This can be represented as a tuple (x_start, y_start).
 
-4.Define the cost function: The cost function determines the cost of moving from one cell to another. In this case, the cost of moving from one cell to another is the Euclidean distance between the two cells. You can use the Pythagorean theorem to calculate the distance between two cells.
+4.Define the cost function: The cost function determines the cost of moving from one cell to another. In this case, the cost of moving from one cell to another is the Euclidean cost between the two cells. You can use the Pythagorean theorem to calculate the cost between two cells.
 
-5.Define the heuristic function: The heuristic function estimates the cost of reaching the goal state from a given cell. In this case, you can use the Euclidean distance between the current cell and the goal state as the heuristic function.
+5.Define the heuristic function: The heuristic function estimates the cost of reaching the goal state from a given cell. In this case, you can use the Euclidean cost between the current cell and the goal state as the heuristic function.
 
 6. Implement the A* algorithm:
 
@@ -53,15 +52,13 @@ export default class Astar extends React.Component{
         this.targetIsPlaced = targetIsPlaced
         this.isSearching = isSearching
         this.setIsSearching = setIsSearching
-        
-        this.stopSearching = this.stopSearching.bind(this);
 
         this.currentNodePos = null;
         this.smallest = null;
 
     }
 
-    async calculateDistance(node){
+    async calculateHeuristic(node){
       //console.log(Math.abs(this.targetPos.X - node.X), Math.abs(this.startPos.X - node.X) + Math.abs(this.startPos.Y - node.Y))
       let H = Math.abs(this.targetPos.X - node.X) + Math.abs(this.targetPos.Y - node.Y);
       let G = Math.abs(this.startPos.X - node.X) + Math.abs(this.startPos.Y - node.Y);
@@ -77,17 +74,17 @@ export default class Astar extends React.Component{
           const unvisited = new Set();
           const visited = new Set();
           unvisited.add(`${this.startPos.X},${this.startPos.Y}`);
-          while(this.isSearching && (this.grid[this.targetPos.Y][this.targetPos.X].distance === Infinity) && unvisited.size > 0) {
+          while(this.isSearching && (this.grid[this.targetPos.Y][this.targetPos.X].cost === Infinity) && unvisited.size > 0) {
             //console.log(this.isSearching)
             
             this.smallest = null;
             this.currentNodePos = null;
-            unvisited?.forEach(function(value){ //find the smallest distance node in the unvisited list
+            unvisited?.forEach(function(value){ //find the smallest cost node in the unvisited list
               const [i, j] = value.split(",");
               if(dijkstraThis.grid && dijkstraThis.grid[Number(j)] && dijkstraThis.grid[Number(j)][Number(i)]){
                 const node = dijkstraThis.grid[Number(j)][Number(i)]; 
-                if (dijkstraThis.smallest === null || node.distance < dijkstraThis.smallest) {
-                    dijkstraThis.smallest = node.distance;
+                if (dijkstraThis.smallest === null || node.cost < dijkstraThis.smallest) {
+                    dijkstraThis.smallest = node.cost;
                     dijkstraThis.currentNodePos = { X: Number(i), Y: Number(j) };
                 }
               }else {
@@ -99,11 +96,11 @@ export default class Astar extends React.Component{
               this.currentNodePos.Y === this.startPos.Y && this.currentNodePos.X === this.startPos.X ? null : this.grid[this.currentNodePos.Y][this.currentNodePos.X].cell = "visited";
               await this.timeoutUpdate(this.searchDelay)
         
-              //check all neighbours, update their distance values and add to unvisited
+              //check all neighbours, update their cost values and add to unvisited
               if(this.currentNodePos.Y > 0 && !visited.has(`${this.currentNodePos.Y-1},${this.currentNodePos.X}`) && this.grid[this.currentNodePos.Y -1][this.currentNodePos.X].cell !== "wall"){ //check above of node
-                let newDist = await this.calculateDistance({Y: this.currentNodePos.Y - 1, X: this.currentNodePos.X})
-                if(newDist < this.grid[this.currentNodePos.Y - 1][this.currentNodePos.X].distance){          
-                  this.grid[this.currentNodePos.Y - 1][this.currentNodePos.X].distance = newDist;
+                let newDist = await this.calculateHeuristic({Y: this.currentNodePos.Y - 1, X: this.currentNodePos.X})
+                if(newDist < this.grid[this.currentNodePos.Y - 1][this.currentNodePos.X].cost){          
+                  this.grid[this.currentNodePos.Y - 1][this.currentNodePos.X].cost = newDist;
                   this.grid[this.currentNodePos.Y - 1][this.currentNodePos.X].parentPos = this.currentNodePos;
                 }
                 this.currentNodePos.Y-1 === this.targetPos.Y && this.currentNodePos.X === this.targetPos.X ? null : this.grid[this.currentNodePos.Y - 1][this.currentNodePos.X].cell = "unvisited"
@@ -112,9 +109,9 @@ export default class Astar extends React.Component{
               }
         
               if(this.currentNodePos.X < this.gridSize-1 && !visited.has(`${this.currentNodePos.Y},${this.currentNodePos.X+1}`) && this.grid[this.currentNodePos.Y][this.currentNodePos.X+1].cell !== "wall"){ //check right of node
-                let newDist = await this.calculateDistance({Y: this.currentNodePos.Y, X: this.currentNodePos.X + 1})
-                if(newDist < this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].distance) {
-                  this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].distance = newDist;
+                let newDist = await this.calculateHeuristic({Y: this.currentNodePos.Y, X: this.currentNodePos.X + 1})
+                if(newDist < this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].cost) {
+                  this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].cost = newDist;
                   this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].parentPos = this.currentNodePos;
                 }
                 this.currentNodePos.Y === this.targetPos.Y && this.currentNodePos.X+1 === this.targetPos.X ? null : this.grid[this.currentNodePos.Y][this.currentNodePos.X + 1].cell = "unvisited"
@@ -123,9 +120,9 @@ export default class Astar extends React.Component{
               }
         
               if(this.currentNodePos.Y < this.gridSize-1 && !visited.has(`${this.currentNodePos.Y+1},${this.currentNodePos.X}`) && this.grid[this.currentNodePos.Y + 1][this.currentNodePos.X].cell !== "wall"){ //check below of node
-                let newDist = await this.calculateDistance({Y: this.currentNodePos.Y + 1, X: this.currentNodePos.X})
-                if(newDist < this.grid[this.currentNodePos.Y + 1][this.currentNodePos.X].distance) {
-                  this.grid[(this.currentNodePos.Y + 1)][this.currentNodePos.X].distance = newDist;
+                let newDist = await this.calculateHeuristic({Y: this.currentNodePos.Y + 1, X: this.currentNodePos.X})
+                if(newDist < this.grid[this.currentNodePos.Y + 1][this.currentNodePos.X].cost) {
+                  this.grid[(this.currentNodePos.Y + 1)][this.currentNodePos.X].cost = newDist;
                   this.grid[this.currentNodePos.Y + 1][this.currentNodePos.X].parentPos = this.currentNodePos;
                 }
                 this.currentNodePos.Y+1 === this.targetPos.Y && this.currentNodePos.X === this.targetPos.X ? null : this.grid[this.currentNodePos.Y + 1][this.currentNodePos.X].cell = "unvisited"
@@ -134,9 +131,9 @@ export default class Astar extends React.Component{
               }
         
               if(this.currentNodePos.X > 0 && !visited.has(`${this.currentNodePos.Y},${this.currentNodePos.X-1}`) && this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].cell !== "wall"){ //check left of node
-                let newDist = await this.calculateDistance({Y: this.currentNodePos.Y, X: this.currentNodePos.X - 1})
-                if(newDist < this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].distance) {          
-                  this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].distance = newDist;
+                let newDist = await this.calculateHeuristic({Y: this.currentNodePos.Y, X: this.currentNodePos.X - 1})
+                if(newDist < this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].cost) {          
+                  this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].cost = newDist;
                   this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].parentPos = this.currentNodePos;
                 }
                 this.currentNodePos.Y === this.targetPos.Y && this.currentNodePos.X-1 === this.targetPos.X ? null : this.grid[this.currentNodePos.Y][this.currentNodePos.X - 1].cell = "unvisited"
@@ -163,7 +160,7 @@ export default class Astar extends React.Component{
 
 
       async findPath(){
-        if(this.grid[this.targetPos.Y][this.targetPos.X].distance === Infinity) {
+        if(this.grid[this.targetPos.Y][this.targetPos.X].cost === Infinity) {
           alert("Target has not been reached!"); 
           return;
         }
@@ -184,12 +181,6 @@ export default class Astar extends React.Component{
 
       render() {
         return null;
-      }
-
-      stopSearching(){
-        //console.log("stop searching" + this.isSearching)
-        // this.setIsSearching(false)
-        //console.log(this.isSearching)
       }
 
   }

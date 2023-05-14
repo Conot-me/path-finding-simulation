@@ -3,14 +3,13 @@ import styles from '@/styles/Home.module.css'
 import { useState, useEffect, use } from 'react'
 import Dijkstras from '@/algorithms/dijkstra.js'
 import Astar from '@/algorithms/astar.js'
+import BFS from '@/algorithms/bfs.js'
+import RecursiveBacktracker from '@/algorithms/recursivebacktracker.js'
 
 export default function Home() {
   const [currentSelection, setCurrentSelection] = useState(null);
   const [gridSize, setGridSize] = useState(21)
   const [grid, setGrid] = useState([])
-  const [gridWidth, setGridWidth] = useState(60)
-  const [gridHeight, setGridHeight] = useState(60)
-  const [targetDistance, setTragetDistance] = useState(0)
   const [startPos, setStartPos] = useState({X: Math.floor(gridSize/2), Y: Math.floor(gridSize/2)})
   const [targetPos, setTargetPos] = useState({X: gridSize-1, Y: gridSize-1})
   const [searchDelay, setSearchDelay] = useState(10)
@@ -20,6 +19,16 @@ export default function Home() {
   const [currentAlgo, setcurrentAlgo] = useState("Algorithms")
   const [isSearching, setIsSearching] = useState(false)
   const [isMouseDown, setIsMouseDown] = useState(false)
+  const [isChecked, setIsChecked] = useState(false);
+
+  const handleDelaySliderChange = (event) => {
+    setSearchDelay(event.target.value);
+  };
+
+  const handleGridSliderChange = (event) => {
+    setGridSize(event.target.value);
+  };
+
   const handleHover = (cellId) => {
     setHoveredCell(cellId);
   };
@@ -27,11 +36,18 @@ export default function Home() {
   const handleMouseDown = ()=>{
     setIsMouseDown(true)
   }
+
   const handleMouseUp = ()=>{
     setIsMouseDown(false)
   }
+
   const handleSearch = async () => {
     setCurrentSelection(null)
+    setIsSearching(true)
+  }
+
+  const handleMaze = async ()=>{
+    setcurrentAlgo('RecursiveBacktracker')
     setIsSearching(true)
   }
 
@@ -49,7 +65,11 @@ export default function Home() {
             await astar.start();
             break;
           case "BFS":
-            alert("not implemented in this version")
+            await bfs.start()
+            break;
+          case 'RecursiveBacktracker':
+            setcurrentAlgo("Algorithms")
+            await recursiveBacktracker.start()
             break;
           default:
             alert("Please choose an algorithm!")
@@ -66,20 +86,24 @@ export default function Home() {
     switch(currentSelection){
       case "start": 
         setStartIsPlaced(true)
-        grid[startPos.Y][startPos.X].cell = "empty";
-        grid[startPos.Y][startPos.X].distance = Infinity; 
+        if(startPos !== null){
+          grid[startPos.Y][startPos.X].cell = "empty";
+          grid[startPos.Y][startPos.X].cost = Infinity;
+        } 
         
         setStartPos(pos)
-        grid[pos.Y][pos.X].distance = 0;
+        grid[pos.Y][pos.X].cost = 0;
         grid[pos.Y][pos.X].cell = currentSelection; 
 
         break;
       case "target":
         setTargetIsPlaced(true)
-        grid[targetPos.Y][targetPos.X].cell = "empty";
-        grid[targetPos.Y][targetPos.X].distance = Infinity;
+        if(targetPos !== null){
+          grid[targetPos.Y][targetPos.X].cell = "empty";
+          grid[targetPos.Y][targetPos.X].cost = Infinity;
+        }
         setTargetPos(pos)
-        grid[pos.Y][pos.X].distance = Infinity;
+        grid[pos.Y][pos.X].cost = Infinity;
         grid[pos.Y][pos.X].cell = currentSelection; 
         break;
 
@@ -87,23 +111,23 @@ export default function Home() {
         switch(grid[pos.Y][pos.X].cell){
           case "start":
             setStartIsPlaced(false)
-            grid[pos.Y][pos.X].distance = Infinity;
+            grid[pos.Y][pos.X].cost = Infinity;
             grid[pos.Y][pos.X].cell = currentSelection; 
             break;
           case "target":
             setTargetIsPlaced(false)
-            grid[pos.Y][pos.X].distance = Infinity;
+            grid[pos.Y][pos.X].cost = Infinity;
             grid[pos.Y][pos.X].cell = currentSelection; 
             break;
             case "wall":
               grid[pos.Y][pos.X].cell = "empty"
-              grid[pos.Y][pos.X].distance = Infinity;
+              grid[pos.Y][pos.X].cost = Infinity;
               updateGrid();
               return;
           default:
           break;
         }
-        grid[pos.Y][pos.X].distance = Infinity;
+        grid[pos.Y][pos.X].cost = Infinity;
         grid[pos.Y][pos.X].cell = currentSelection; 
         break;
       default:
@@ -118,6 +142,11 @@ export default function Home() {
   }
 
   const createGrid = ()=> {
+    setGrid([])
+    setTargetPos(null)
+    setStartPos(null)
+    setStartIsPlaced(false)
+    setTargetIsPlaced(false)
     var gridBuffer = []
     var id = 0;
     for(var i = 0; i < gridSize; i++){
@@ -125,9 +154,9 @@ export default function Home() {
       for(var j = 0; j < gridSize; j++){
         gridBuffer[i][j] = {
           id: id++,
-          cell: i === startPos.Y && j === startPos.X ? "start" : i === targetPos.Y && j === targetPos.X ? "target" : "empty",
+          cell: "empty",
           weight:  1,
-          distance: i === startPos.Y && j === startPos.X ? 0 : Infinity,
+          cost: Infinity,
           pos: {X: j, Y: i},
           parentPos: {X: null, Y: null}
         }
@@ -138,7 +167,7 @@ export default function Home() {
 
   useEffect(() => {
     createGrid();
-  },[]);
+  },[gridSize]);
 
   const resetGrid = ()=>{
     // setIsSearching(false)
@@ -149,7 +178,7 @@ export default function Home() {
         }
 
         if(grid[i][j].cell === "start") continue;
-        grid[i][j].distance = Infinity;
+        grid[i][j].cost = Infinity;
       }
     }
     updateGrid()
@@ -160,7 +189,7 @@ export default function Home() {
       for(var j = 0; j < gridSize; j++){
         if(grid[i][j].cell === "wall"){
           grid[i][j].cell = "empty";
-          grid[i][j].distance = Infinity;
+          grid[i][j].cost = Infinity;
 
         }
       }
@@ -200,17 +229,39 @@ export default function Home() {
     stopSearching: stopSearching,
 });
 
+const bfs = new BFS({
+  grid: grid,
+  updateGrid: updateGrid,
+  timeoutUpdate: timeoutUpdate,
+  gridSize: gridSize,
+  startPos: startPos,
+  targetPos: targetPos,
+  searchDelay: searchDelay,
+  resetGrid: resetGrid,
+  startIsPlaced: startIsPlaced,
+  targetIsPlaced: targetIsPlaced,
+  isSearching: isSearching,
+  stopSearching: stopSearching,
+});
+
+const recursiveBacktracker = new RecursiveBacktracker({
+  grid: grid,
+  updateGrid: updateGrid,
+  timeoutUpdate: timeoutUpdate,
+  gridSize: gridSize,
+  startPos: startPos,
+  targetPos: targetPos,
+  searchDelay: searchDelay,
+  resetGrid: resetGrid,
+  startIsPlaced: startIsPlaced,
+  targetIsPlaced: targetIsPlaced,
+  isSearching: isSearching,
+  stopSearching: stopSearching,
+});
+
   function stopSearching(){
     //setIsSearching(false)
   }
-
-  async function findTargetDistance(){
-    setTragetDistance(Math.abs(startPos.X - targetPos.X) + Math.abs(startPos.Y - targetPos.Y));
-  }
-
-  useEffect(() => {
-    findTargetDistance()
-  }, [startPos, targetPos]);
 
   const cellStyle = (cell) =>{
     return{
@@ -259,27 +310,28 @@ export default function Home() {
       <section className={styles.Section}>
         
         <div className={styles.MenuContainer}>
-        <button className={styles.MenuButton} onClick={()=>{grid.length > 0 ? (resetGrid(), removeWalls()) : createGrid()}}  style={isSearching ? {opacity: "0.5", pointerEvents: "none" } : null}>{grid.length > 0 ? "Reset grid" : "Create grid"}</button>
-        <div className={styles.Dropdown}>
-          <button className={styles.MenuButton}>{currentAlgo === false ? "Algorithms" : currentAlgo}</button>
-          <div className={styles.DropdownContent}>
-            <a onClick={()=>setcurrentAlgo("Dijkstras")}>Dijkstras</a>
-            <a onClick={()=>setcurrentAlgo("A*")}>A*</a>
-            <a onClick={()=>setcurrentAlgo("BFS")}>BFS</a>
+          <button className={styles.MenuButton} onClick={()=>{grid.length > 0 ? (resetGrid(), removeWalls()) : createGrid()}}  style={isSearching ? {opacity: "0.5", pointerEvents: "none" } : null}>{grid.length > 0 ? "Reset grid" : "Create grid"}</button>
+          <div className={styles.Dropdown} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : null}>
+            <button className={styles.MenuButton}>{currentAlgo === false ? "Algorithms" : currentAlgo}</button>
+            <div className={styles.DropdownContent}>
+              <a onClick={()=>setcurrentAlgo("Dijkstras")}>Dijkstras</a>
+              <a onClick={()=>setcurrentAlgo("A*")}>A*</a>
+              <a onClick={()=>setcurrentAlgo("BFS")}>BFS</a>
+            </div>
           </div>
-        </div>
-        <button className={styles.MenuButton} onClick={()=>handleSearch()} style={(grid.length > 0 && !isSearching) ? {} : {opacity: "0.5", pointerEvents: "none" }}>Find Path</button>
-        <button className={styles.MenuButton} onClick={()=>setCurrentSelection("start")} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "start" ? "#78bafc" : ""}}>Place Start</button>
-        <button className={styles.MenuButton} onClick={()=>setCurrentSelection("target")} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "target" ? "#ff7f7f" : ""}}>Place Target</button>
-        <button className={styles.MenuButton} onClick={()=>setCurrentSelection('wall')} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "wall" ? "#000000" : ""}}>Add Walls</button>
+          <button className={styles.MenuButton} onClick={()=>handleSearch()} style={(grid.length > 0 && !isSearching) ? {} : {opacity: "0.5", pointerEvents: "none" }}>Find Path</button>
+          <button className={styles.MenuButton} onClick={()=>setCurrentSelection("start")} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "start" ? "#78bafc" : ""}}>Place Start</button>
+          <button className={styles.MenuButton} onClick={()=>setCurrentSelection("target")} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "target" ? "#ff7f7f" : ""}}>Place Target</button>
+          <button className={styles.MenuButton} onClick={()=>setCurrentSelection('wall')} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "wall" ? "#000000" : ""}}>Add Walls</button>
+          <button className={styles.MenuButton} onClick={()=>handleMaze()} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "wall" ? "#000000" : ""}}>Add Maze</button>
         </div>
         
-        <div className={styles.Grid} style={{width: `${gridWidth}%`, height: `${gridHeight}%`}}>
+        <div className={styles.Grid}>
           {grid.map((cellRow) => {
             return cellRow.map((cell) => {
               return (
                 <div className={styles.Cell} key={cell.id} onClick={()=>handleClick(cell.pos)} onMouseEnter={() => {handleHover(cell.id); isMouseDown ? handleClick(cell.pos) : null}} onMouseDown={()=>handleMouseDown()} onMouseUp={()=>handleMouseUp()} style={cellStyle(cell)}>
-                  {/* <p>{cell.distance === Infinity ? "∞" : cell.distance}</p> */}
+                  {isChecked ? <p>{cell.cost === Infinity ? currentAlgo === "Dijkstras" ? "∞" : "" : cell.cost}</p> : null}
                 </div>
               );
             });
@@ -291,6 +343,49 @@ export default function Home() {
               <p style={{color: "#f6c37d" }}>Unvisited Node</p>
               <p style={{color: "#78e080" }}>Path Node</p>
           </div>
+
+          <div className={styles.MenuContainer2}>
+
+            <div className={styles.SliderContainer} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : null}>
+              <label htmlFor="slider" className={styles.SliderLabel}>
+                Speed
+              </label>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                value={searchDelay}
+                onChange={handleDelaySliderChange}
+                className={styles.Slider}
+                id="slider"
+              />
+              <span className={styles.SliderValue}>{searchDelay + "ms"}</span>
+            </div>
+
+            <div className={styles.SliderContainer} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : null}>
+              <label htmlFor="slider" className={styles.SliderLabel}>
+                Grid Size
+              </label>
+              <input
+                type="range"
+                min="10"
+                max="50"
+                value={gridSize}
+                onChange={handleGridSliderChange}
+                className={styles.Slider}
+                id="slider"
+              />
+              <span className={styles.SliderValue}>{gridSize + "x" + gridSize}</span>
+            </div>
+
+            <label className={styles.Checkbox}>
+              <input type="checkbox" checked={isChecked} onChange={() => setIsChecked(!isChecked)} />
+              <span className={styles.CheckboxMark}></span>
+              <span className={styles.CheckboxLabel}>Traversal Cost</span>
+            </label>
+
+          </div>
+          
         </div>
         
       </section>
