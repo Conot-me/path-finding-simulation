@@ -7,6 +7,7 @@ export default function Document() {
       <meta name="description" content="Simulations of various path finding algorithms."/>
       <meta name="keywords" content="dijkstras, A*, breadth first search"/>
       <meta name="author" content="Conot"></meta>
+      <link rel="icon" type="image/png" href="/images/pathIcon2.jpg"/>
     </Head>
     <body>
       <Main />
