@@ -385,11 +385,18 @@ const recursiveBacktracker = new RecursiveBacktracker({
               <span className={styles.CheckboxMark}></span>
               <span className={styles.CheckboxLabel}>Traversal Cost</span>
             </label>
-
           </div>
-          
+          <div className={styles.Guide}>
+            <h2 className={styles.GuideTitle}>Guide</h2>
+            <p className={styles.GuideDescription}>This project is an interactive tool that helps users visualize the process of finding the shortest path between two points on a grid. Users can customize the grid size, obstacles, node positions and then watch as your choice of algorithm finds the optimal path.</p>
+            <ul className={styles.GuideInstructions}>
+              <li>Ensure that Start and Target nodes are placed on the grid. you can do this by clicking its associated button on the top left and clicking on the grid.</li><br/>
+              <li>Make sure that you have a algorithm selected. You can do this by hovering over the algorithm button and selecting one of the algorithms that appear. You may also notice that the algorithm button now displays the correct algorithm you have chosen.</li><br/>
+              <li>If you want to add walls simply click on the wall button and then click/drag over the grid. There is also a option to generate a maze in the grid, this will unfortunately make you repeat the steps above.</li><br/>
+              <li>When you are ready to find your path, simply click on the "find path" button and watch the simulation.</li>
+            </ul>
+          </div>
         </div>
-        
       </section>
     </>
 
