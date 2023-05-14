@@ -13,8 +13,8 @@ export default function Home() {
   const [startPos, setStartPos] = useState({X: Math.floor(gridSize/2), Y: Math.floor(gridSize/2)})
   const [targetPos, setTargetPos] = useState({X: gridSize-1, Y: gridSize-1})
   const [searchDelay, setSearchDelay] = useState(10)
-  const [startIsPlaced, setStartIsPlaced] = useState(true)
-  const [targetIsPlaced, setTargetIsPlaced] = useState(true)
+  const [startIsPlaced, setStartIsPlaced] = useState(false)
+  const [targetIsPlaced, setTargetIsPlaced] = useState(false)
   const [hoveredCell, setHoveredCell] = useState(null);
   const [currentAlgo, setcurrentAlgo] = useState("Algorithms")
   const [isSearching, setIsSearching] = useState(false)
@@ -49,6 +49,8 @@ export default function Home() {
   const handleMaze = async ()=>{
     setcurrentAlgo('RecursiveBacktracker')
     setIsSearching(true)
+    setStartIsPlaced(false)
+    setTargetIsPlaced(false)
   }
 
   useEffect(() => {
@@ -309,21 +311,21 @@ const recursiveBacktracker = new RecursiveBacktracker({
       </Head>
       <section className={styles.Section}>
         
-        <div className={styles.MenuContainer}>
-          <button className={styles.MenuButton} onClick={()=>{grid.length > 0 ? (resetGrid(), removeWalls()) : createGrid()}}  style={isSearching ? {opacity: "0.5", pointerEvents: "none" } : null}>{grid.length > 0 ? "Reset grid" : "Create grid"}</button>
+        <div className={styles.MenuContainer}>          
+          <button className={styles.MenuButton} onClick={()=>setCurrentSelection("start")} style={(startIsPlaced || currentSelection === "start") ? isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "start" ? "#78bafc" : ""} : {borderColor: "red"}}>Place Start</button>
+          <button className={styles.MenuButton} onClick={()=>setCurrentSelection("target")} style={(targetIsPlaced || currentSelection === "target") ? isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "target" ? "#ff7f7f" : ""}: {borderColor: "red"}}>Place Target</button>
+          <button className={styles.MenuButton} onClick={()=>setCurrentSelection('wall')} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "wall" ? "#000000" : ""}}>Add Walls</button>
           <div className={styles.Dropdown} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : null}>
-            <button className={styles.MenuButton}>{currentAlgo === false ? "Algorithms" : currentAlgo}</button>
+            <button className={styles.MenuButton} style={currentAlgo === "Algorithms" ? {borderColor: "red"} : null}>{currentAlgo === false ? "Algorithms" : currentAlgo}</button>
             <div className={styles.DropdownContent}>
               <a onClick={()=>setcurrentAlgo("Dijkstras")}>Dijkstras</a>
               <a onClick={()=>setcurrentAlgo("A*")}>A*</a>
               <a onClick={()=>setcurrentAlgo("BFS")}>BFS</a>
             </div>
           </div>
-          <button className={styles.MenuButton} onClick={()=>handleSearch()} style={(grid.length > 0 && !isSearching) ? {} : {opacity: "0.5", pointerEvents: "none" }}>Find Path</button>
-          <button className={styles.MenuButton} onClick={()=>setCurrentSelection("start")} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "start" ? "#78bafc" : ""}}>Place Start</button>
-          <button className={styles.MenuButton} onClick={()=>setCurrentSelection("target")} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "target" ? "#ff7f7f" : ""}}>Place Target</button>
-          <button className={styles.MenuButton} onClick={()=>setCurrentSelection('wall')} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "wall" ? "#000000" : ""}}>Add Walls</button>
-          <button className={styles.MenuButton} onClick={()=>handleMaze()} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : {borderColor: currentSelection === "wall" ? "#000000" : ""}}>Add Maze</button>
+          <button className={styles.MenuButton} onClick={()=>handleSearch()} style={((grid.length > 0 && !isSearching) && (startIsPlaced === true && targetIsPlaced === true)) ? {borderColor: "#78e080"} : {opacity: "0.5", pointerEvents: "none" }}>Find Path</button>
+          <button className={styles.MenuButton} onClick={()=>handleMaze()} style={isSearching === true ? {opacity: "0.5", pointerEvents: "none" } : null}>Generate Maze</button>
+          <button className={styles.MenuButton} onClick={()=>{grid.length > 0 ? (resetGrid(), removeWalls()) : createGrid()}}  style={isSearching ? {opacity: "0.5", pointerEvents: "none" } : null}>{grid.length > 0 ? "Reset grid" : "Create grid"}</button>
         </div>
         
         <div className={styles.Grid}>
